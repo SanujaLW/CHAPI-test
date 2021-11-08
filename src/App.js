@@ -1,23 +1,35 @@
-import logo from './logo.svg';
-import './App.css';
+import './App.css'
+import { Link } from "react-router-dom";
+import { loadOnce } from 'credential-handler-polyfill';
+
+let polyfill;
+
+const registerWallet = async () => {
+
+  const MEDIATOR = 'https://authn.io/mediator' + '?origin=' +
+    encodeURIComponent(window.location.origin);
+
+    if(!polyfill) {
+      polyfill = await loadOnce(MEDIATOR);
+    }
+
+    const {CredentialManager, CredentialHandlers} = polyfill;
+
+    const result = await CredentialManager.requestPermission();
+    if(result !== 'granted') {
+      throw new Error('Permission denied.');
+    }
+
+    // get credential handler registration
+    const registration = await CredentialHandlers.register('/credential-handler');
+}
 
 function App() {
+  registerWallet();
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Link to="/issuer">Issuer</Link>
+      <Link to="/verifier">Verifier</Link>
     </div>
   );
 }
